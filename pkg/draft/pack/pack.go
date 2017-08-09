@@ -47,6 +47,8 @@ const (
 	HerokuLicenseName = "NOTICE"
 	// DockerignoreName is the name of the Docker ignore file
 	DockerignoreName = ".dockerignore"
+
+	AcidFileName = "acid.js"
 )
 
 // Pack defines a Draft Starter Pack.
@@ -58,6 +60,9 @@ type Pack struct {
 	// DetectScript is a command that determines if the Pack is a candidate for an app. When
 	// .Detect() is called on the Pack, the data here is piped as stdin to `/bin/bash -s`.
 	DetectScript []byte
+
+	// The Acid.js script
+	AcidScript []byte
 }
 
 // Detect determines if this pack is viable for the given application in dir.
@@ -121,6 +126,20 @@ func (p *Pack) SaveDir(dest string, includeDetectScript bool) error {
 	if !exists {
 		if err := ioutil.WriteFile(dockerfilePath, p.Dockerfile, 0644); err != nil {
 			return err
+		}
+	}
+
+	// save Acid.js
+	if len(p.AcidScript) > 0 {
+		acidPath := filepath.Join(dest, AcidFileName)
+		exists, err := osutil.Exists(acidPath)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			if err := ioutil.WriteFile(acidPath, p.AcidScript, 0644); err != nil {
+				return err
+			}
 		}
 	}
 

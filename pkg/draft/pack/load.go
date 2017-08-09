@@ -3,6 +3,7 @@ package pack
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"k8s.io/helm/pkg/chartutil"
@@ -31,6 +32,15 @@ func FromDir(dir string) (*Pack, error) {
 	pack.Dockerfile, err = ioutil.ReadFile(dockerfile)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %s", dockerfile, err)
+	}
+
+	// Load Acid file if present
+	acidjs := filepath.Join(topdir, AcidFileName)
+	if _, err := os.Stat(acidjs); err == nil {
+		pack.AcidScript, err = ioutil.ReadFile(acidjs)
+		if err != nil {
+			return nil, fmt.Errorf("error reading %s: %s", dockerfile, err)
+		}
 	}
 
 	detect := filepath.Join(topdir, DetectName)
